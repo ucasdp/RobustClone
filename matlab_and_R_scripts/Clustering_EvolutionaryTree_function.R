@@ -180,7 +180,7 @@ plot_MST <- function(clone_gety, robust_clone, pdf_name){
     size[i] <- length(robust_clone[[i]])/length(clust_assign)*250
   }
   
-  pdf(paste('MST_', pdf_name, '.pdf', sep=''))
+  pdf(paste('RobustClone_MST_', pdf_name, '.pdf', sep=''))
   plot(minspantree,layout=layout_as_tree,vertex.color=col,edge.color='black',vertex.label.color='black',alpha=0.5,
        edge.width=4,vertex.size=size,vertex.shape= "sphere",vertex.label=labelname)
   dev.off()

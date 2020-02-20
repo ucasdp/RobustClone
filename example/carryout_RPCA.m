@@ -1,6 +1,6 @@
 clear
 
-addpath(genpath('./matlab_and_R_scripts')); 
+addpath(genpath('./RobustClone/matlab_and_R_scripts')); 
 tic
 D=csvread('exampledata.csv',1,1);
 
