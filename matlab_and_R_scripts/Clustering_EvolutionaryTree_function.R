@@ -10,7 +10,10 @@ library(vegan)
 
 
 ############################## Louvain-Jaccard clustering ##############################
-########################################################################################
+# Input:
+#  AA: the genotype matrix recovered by RPCA.
+# Output: 
+#  robust_clone: a list variable, where each component represents a cluster with labels of the cells contained.
 
 LJClustering <- function(AA){
   m <- dim(AA)[1]
@@ -68,9 +71,12 @@ LJClustering <- function(AA){
 }
 
 
-
 ############################## subclonal GTM ###########################################
-########################################################################################
+# Input:
+#  robust_clone: the clustering result output by LJClustering function;
+#  type: the data type ('SNV' or 'CNV') of input.
+# Output: 
+#  clone_gety: the inferred clonal genotype based on the Louvain-Jaccard clustering.
 
 subclone_GTM <- function(robust_clone, type){
   clone_gety <- matrix(0,length(robust_clone),ncol(AA))
@@ -114,10 +120,17 @@ mode_num <- function(x) #the mutation state with highest frequency
   return(as.numeric(names(table(x))[table(x) == max(table(x))]))
 }
 
-############################## clonal minimum spanning tree ############################
-########################################################################################
 
-plot_MST <- function(clone_gety, robust_clone){
+############################## clonal minimum spanning tree ############################
+# Input:
+#  clone_gety: the inferred clonal genotype based on the Louvain-Jaccard clustering output by subclone_GTM function;
+#  robust_clone: the clustering result output by LJClustering function;
+#  pdf_name: the name of pdf with the clonal MST graph.
+# Output: 
+#  the pdf with the clonal MST graph;
+#  el: the connected edges in the MST.
+
+plot_MST <- function(clone_gety, robust_clone, pdf_name){
   
   clone_gety_root <- matrix(2,(length(robust_clone)+1),ncol(clone_gety))
   clone_gety_root[2:(length(robust_clone)+1),] <- clone_gety
@@ -167,11 +180,14 @@ plot_MST <- function(clone_gety, robust_clone){
     size[i] <- length(robust_clone[[i]])/length(clust_assign)*250
   }
   
+  pdf(paste('MST_', pdf_name, '.pdf', sep=''))
   plot(minspantree,layout=layout_as_tree,vertex.color=col,edge.color='black',vertex.label.color='black',alpha=0.5,
        edge.width=4,vertex.size=size,vertex.shape= "sphere",vertex.label=labelname)
+  dev.off()
   
   return(el)
 }
+
 
 findpath<-function(node,prev_node,info){
   adj<-which(info[node,]!=0)
@@ -192,9 +208,14 @@ findpath<-function(node,prev_node,info){
 
 
 ############################## newly mutated genotypes of each subclone ################
-########################################################################################
+# Input:
+#  clone_gety: the inferred clonal genotype based on the Louvain-Jaccard clustering output by subclone_GTM function;
+#  robust_clone: the clustering result output by LJClustering function;
+#  el: the connected edges in the MST output by plot_MST function.
+# Output: 
+#  clones_mt_change: a list variable where each component contains the newly mutated genotypes of each subclone.
 
-new_mutation <- function(robust_clone, clone_gety, el){
+new_mutation <- function(clone_gety, robust_clone, el){
   clones_mutation <- list()
   for(i in 1:length(robust_clone)){
     clone_mt <- which(clone_gety[i,]!=0)
