@@ -6,8 +6,8 @@ RobustClone runs as follows:
 2. Run the matlab script file, named "carryout_RPCA.m" to recover the genotype matrix.
 3. Run the R language script file, named "carryout_clonal_tree.R" to cluster cells and reconstruct the subclonal evolutionary tree.
 
-```
 Please cite the RobustClone in your publications if it helps your research.
+```
 @article{chen2019robustclone,
   title={RobustClone: A robust PCA method of tumor clone and evolution inference from single-cell sequencing data},
   author={Chen, Ziwei and Gong, Fuzhou and Ma, Liang and Wan, Lin},
@@ -17,3 +17,13 @@ Please cite the RobustClone in your publications if it helps your research.
   publisher={Cold Spring Harbor Laboratory}
 }
 ```
+Please cite this project in your publications if it helps your research.
+```
+@misc{robustclone,
+    author = {Chen, Ziwei and Gong, Fuzhou and Ma, Liang and Wan, Lin},
+    title = {RobustClone},
+    howpublished = {\url{https://github.com/ucasdp/RobustClone}},
+    year ={2019}
+}
+```
+
