@@ -17,20 +17,20 @@ library(vegan)
 
 LJClustering <- function(AA){
   m <- dim(AA)[1]
-  if(m<100){
+  if(m < 100){
     nn <- 10
   }
-  if(m<=100){
+  if(m <= 100){
     nn <- 10
   }
-  if(m>100&m<=1000){
+  if(m > 100 & m <= 1000){
     nn <- 30
   }
-  if(m>1000){
+  if(m > 1000){
     nn <- 150
   }
   
-  nearest <- nn2(AA,AA,k=nn+1, searchtype="priority")
+  nearest <- nn2(AA, AA, k=nn+1, searchtype="priority")
   nearest$nn.idx <- nearest$nn.idx[,-1]
   nearest$nn.dists <- nearest$nn.dists[,-1] #Convert to a similarity score
   nearest$nn.sim <-  1*(nearest$nn.dists >= 0)
@@ -42,13 +42,13 @@ LJClustering <- function(AA){
   edges$C <- 1
   
   #Remove repetitions
-  edges <-  unique(transform(edges, A = pmin(A,B), B=pmax(A,B)))
+  edges <-  unique(transform(edges, A = pmin(A,B), B = pmax(A,B)))
   
   Adj <-  matrix(0, nrow=nrow(AA), ncol=nrow(AA))
   rownames(Adj) <-  rownames(AA)
   colnames(Adj) <-  rownames(AA)
-  Adj[cbind(edges$A,edges$B)] <-  edges$C
-  Adj[cbind(edges$B,edges$A)] <-  edges$C
+  Adj[cbind(edges$A, edges$B)] <-  edges$C
+  Adj[cbind(edges$B, edges$A)] <-  edges$C
   for(i in 1:nrow(Adj)){
     Adj[i,i] <- 0
   }
@@ -82,7 +82,7 @@ subclone_GTM <- function(robust_clone, type){
   clone_gety <- matrix(0,length(robust_clone),ncol(AA))
 
   #SNV data
-  if(type=='SNV'){
+  if(type == 'SNV'){
     unexit <- list()
     for(i in 1:nrow(clone_gety)){
       clone_cells_gety <- AA[robust_clone[[i]],]
@@ -103,7 +103,7 @@ subclone_GTM <- function(robust_clone, type){
   }
   
   #CNV data
-  if(type=='CNV'){
+  if(type == 'CNV'){
     for(i in 1:nrow(clone_gety)){
       clone_cells_gety <- AA[robust_clone[[i]],]
       for(j in 1:ncol(clone_gety)){
@@ -125,14 +125,20 @@ mode_num <- function(x) #the mutation state with highest frequency
 # Input:
 #  clone_gety: the inferred clonal genotype based on the Louvain-Jaccard clustering output by subclone_GTM function;
 #  robust_clone: the clustering result output by LJClustering function;
+#  type: the data type ('SNV' or 'CNV') of input;
 #  pdf_name: the name of pdf with the clonal MST graph.
 # Output: 
 #  the pdf with the clonal MST graph;
 #  el: the connected edges in the MST.
 
-plot_MST <- function(clone_gety, robust_clone, pdf_name){
+plot_MST <- function(clone_gety, robust_clone, type, pdf_name){
+  if(type == 'SNV'){
+    clone_gety_root <- matrix(0,(length(robust_clone)+1),ncol(clone_gety))
+  }
+  if(type == 'CNV'){
+    clone_gety_root <- matrix(2,(length(robust_clone)+1),ncol(clone_gety))
+  }
   
-  clone_gety_root <- matrix(2,(length(robust_clone)+1),ncol(clone_gety))
   clone_gety_root[2:(length(robust_clone)+1),] <- clone_gety
   
   rownames(clone_gety_root) <- c('Root',paste('subclone',c(1:length(robust_clone)),sep=''))
@@ -177,12 +183,12 @@ plot_MST <- function(clone_gety, robust_clone, pdf_name){
   col <- intpalette(c('magenta','red','limegreen','skyblue','pink','brown','gold','blue','cyan'),length(robust_clone))
   size <- c(1:length(robust_clone))
   for(i in 1:length(size)){
-    size[i] <- length(robust_clone[[i]])/length(clust_assign)*250
+    size[i] <- length(robust_clone[[i]])/sum(lengths(robust_clone))*250
   }
   
   pdf(paste('RobustClone_MST_', pdf_name, '.pdf', sep=''))
-  plot(minspantree,layout=layout_as_tree,vertex.color=col,edge.color='black',vertex.label.color='black',alpha=0.5,
-       edge.width=4,vertex.size=size,vertex.shape= "sphere",vertex.label=labelname)
+  plot(minspantree, layout=layout_as_tree, vertex.color=col, edge.color='black', vertex.label.color='black', alpha=0.5,
+       edge.width=4, vertex.size=size, vertex.shape= "sphere", vertex.label=labelname)
   dev.off()
   
   return(el)
@@ -225,6 +231,7 @@ new_mutation <- function(clone_gety, robust_clone, el){
   clones_mt_change <- list() #newly mutated genotypes of each subclone
   root_mt <- clones_mutation[[el[1,1]]]
   clones_mt_change <- c(clones_mt_change,list(root_mt))
+  names(clones_mt_change)[1] <- paste('subclone', el[1,1], sep='')
   for(i in 1:nrow(el)){
     clone1 <- el[i,1]
     clone2 <- el[i,2]
@@ -232,6 +239,7 @@ new_mutation <- function(clone_gety, robust_clone, el){
     clone2_mt <- clones_mutation[[clone2]]
     new_mt <- setdiff(clone2_mt,clone1_mt)
     clones_mt_change <- c(clones_mt_change,list(new_mt))
+    names(clones_mt_change)[i+1] <- paste('subclone', as.numeric(clone2), sep='')
   }
   return(clones_mt_change)
 }
