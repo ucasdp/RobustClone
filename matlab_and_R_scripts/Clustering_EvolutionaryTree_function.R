@@ -17,9 +17,6 @@ library(vegan)
 
 LJClustering <- function(AA){
   m <- dim(AA)[1]
-  if(m < 100){
-    nn <- 10
-  }
   if(m <= 100){
     nn <- 10
   }
