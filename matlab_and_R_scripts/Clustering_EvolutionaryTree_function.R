@@ -71,7 +71,11 @@ LJClustering <- function(AA){
 ############################## subclonal GTM ###########################################
 # Input:
 #  robust_clone: the clustering result output by LJClustering function;
-#  type: the data type ('SNV' or 'CNV') of input.
+#  type: the data type ('SNV' or 'CNV') of input. 
+#        Here, 'CNV' data element is the number of copies of each chromosome segment in each cell, such as: 0, 1, 2, 3, 4, 5 , ……, 
+#            where copy number 2 is normal,
+#       'SNV' data element is binary or ternary, that is 0, 1 or 0, 1, 2, 
+#            where 0 represents normal, 1 in binary data represents mutation under the hypothesis of infinite site, and 1,2 in ternary data represent mutation under the hypothesis of finite site;
 # Output: 
 #  clone_gety: the inferred clonal genotype based on the Louvain-Jaccard clustering.
 
@@ -122,7 +126,11 @@ mode_num <- function(x) #the mutation state with highest frequency
 # Input:
 #  clone_gety: the inferred clonal genotype based on the Louvain-Jaccard clustering output by subclone_GTM function;
 #  robust_clone: the clustering result output by LJClustering function;
-#  type: the data type ('SNV' or 'CNV') of input;
+#  type: the data type ('SNV' or 'CNV') of input.
+#        Here, 'CNV' data element is the number of copies of each chromosome segment in each cell, such as: 0, 1, 2, 3, 4, 5 , ……, 
+#            where copy number 2 is normal,
+#       'SNV' data element is binary or ternary, that is 0, 1 or 0, 1, 2, 
+#            where 0 represents normal, 1 in binary data represents mutation under the hypothesis of infinite site, and 1,2 in ternary data represent mutation under the hypothesis of finite site;
 #  pdf_name: the name of pdf with the clonal MST graph.
 # Output: 
 #  the pdf with the clonal MST graph;
