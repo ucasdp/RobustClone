@@ -233,14 +233,18 @@ findpath<-function(node,prev_node,info){
 
 new_mutation <- function(clone_gety, robust_clone, el, type){
   clones_mutation <- list()
-  for(i in 1:length(robust_clone)){
-    if(type == 'SNV'){
+  
+  if(type == 'SNV'){
+    for(i in 1:length(robust_clone)){
       clone_mt <- which(clone_gety[i,]!=0)
+      clones_mutation <- c(clones_mutation,list(clone_mt))
     }
-    if(type == 'CNV'){
+  }
+  if(type == 'CNV'){
+    for(i in 1:length(robust_clone)){
       clone_mt <- which(clone_gety[i,]!=2)
+      clones_mutation <- c(clones_mutation,list(clone_mt))
     }
-    clones_mutation <- c(clones_mutation,list(clone_mt))
   }
   
   clones_mt_change <- list() #newly mutated genotypes of each subclone
