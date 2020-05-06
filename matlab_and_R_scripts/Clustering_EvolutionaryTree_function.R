@@ -229,7 +229,7 @@ findpath<-function(node,prev_node,info){
 #       'SNV' data element is binary or ternary, that is 0, 1 or 0, 1, 2, 
 #            where 0 represents normal, 1 in binary data represents mutation under the hypothesis of infinite site, and 1,2 in ternary data represent mutation under the hypothesis of finite site;
 # Output: 
-#  clones_mt_change: a list variable where each component contains the new SNV loci or CNV genome fragments of each subclone compared with its ancestors.
+#  clones_mt_change: a list variable where each component contains the new SNV loci or CNV genome fragments of each subclone compared with its parent subclone.
 
 new_mutation <- function(clone_gety, robust_clone, el, type){
   clones_mutation <- list()
