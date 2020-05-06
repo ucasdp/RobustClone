@@ -218,18 +218,28 @@ findpath<-function(node,prev_node,info){
 }
 
 
-############################## newly mutated genotypes of each subclone ################
+############################## obtain the new SNV loci or CNV genome fragments of each subclone ################
 # Input:
 #  clone_gety: the inferred clonal genotype based on the Louvain-Jaccard clustering output by subclone_GTM function;
 #  robust_clone: the clustering result output by LJClustering function;
 #  el: the connected edges in the MST output by plot_MST function.
+#  type: the data type ('SNV' or 'CNV') of input.
+#        Here, 'CNV' data element is the number of copies of each chromosome segment in each cell, such as: 0, 1, 2, 3, 4, 5 , ……, 
+#            where copy number 2 is normal,
+#       'SNV' data element is binary or ternary, that is 0, 1 or 0, 1, 2, 
+#            where 0 represents normal, 1 in binary data represents mutation under the hypothesis of infinite site, and 1,2 in ternary data represent mutation under the hypothesis of finite site;
 # Output: 
-#  clones_mt_change: a list variable where each component contains the newly mutated genotypes of each subclone.
+#  clones_mt_change: a list variable where each component contains the new SNV loci or CNV genome fragments of each subclone compared with its ancestors.
 
-new_mutation <- function(clone_gety, robust_clone, el){
+new_mutation <- function(clone_gety, robust_clone, el, type){
   clones_mutation <- list()
   for(i in 1:length(robust_clone)){
-    clone_mt <- which(clone_gety[i,]!=0)
+    if(type == 'SNV'){
+      clone_mt <- which(clone_gety[i,]!=0)
+    }
+    if(type == 'CNV'){
+      clone_mt <- which(clone_gety[i,]!=2)
+    }
     clones_mutation <- c(clones_mutation,list(clone_mt))
   }
   

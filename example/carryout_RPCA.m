@@ -9,8 +9,7 @@ D=csvread('exampledata.csv',1,1);
 
 %% there exist unobservable entries
 [m,n]=size(D); % In SNV data, 3 represents missing in general.
-%                           In CNV data, the missing copy number at the particular locations can be replaced by a number that does not appear in the CNV matrix. 
-%                           For example, the missing locations can be filled with -1 in D.
+%                           In CNV data, the missing copy number at the particular locations can be replaced by a number that does not appear in the CNV matrix.  For example, the missing locations can be filled with -1 in D.
 ms=3; % ms represents missing data. In SNV data, if 3 represents missing, then ms=3; In CNV data, if -1 represents missing, then ms=-1.
 omega=find(D~=ms); 
 omegaC=find(D==ms);
