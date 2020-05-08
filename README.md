@@ -11,13 +11,12 @@ RobustClone runs as follows:
 Please cite the RobustClone in your publications if it helps your research.
 ```
 @article{chen2019robustclone,
-  title={RobustClone: A robust PCA method of tumor clone and evolution inference from single-cell sequencing data},
-  author={Chen, Ziwei and Gong, Fuzhou and Ma, Liang and Wan, Lin},
-  journal={bioRxiv},
-  pages={666271},
-  year={2019},
-  publisher={Cold Spring Harbor Laboratory}
+  title={RobustClone: A robust PCA method for tumor clone and evolution inference from single-cell sequencing data},
+  author={Chen, Ziwei and Gong, Fuzhou and Wan, Lin and Ma, Liang},
+  journal={Bioinformatics},
+  year={2019}
 }
+
 ```
 Please cite this project in your publications if it helps your research.
 ```
