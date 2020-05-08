@@ -70,6 +70,7 @@ LJClustering <- function(AA){
 
 ############################## subclonal GTM ###########################################
 # Input:
+#  AA: the genotype matrix recovered by RPCA.
 #  robust_clone: the clustering result output by LJClustering function;
 #  type: the data type ('SNV' or 'CNV') of input. 
 #        Here, 'CNV' data element is the number of copies of each chromosome segment in each cell, such as: 0, 1, 2, 3, 4, 5 , ……, 
@@ -79,7 +80,7 @@ LJClustering <- function(AA){
 # Output: 
 #  clone_gety: the inferred clonal genotype based on the Louvain-Jaccard clustering.
 
-subclone_GTM <- function(robust_clone, type){
+subclone_GTM <- function(AA, robust_clone, type){
   clone_gety <- matrix(0,length(robust_clone),ncol(AA))
 
   #SNV data
@@ -218,10 +219,9 @@ findpath<-function(node,prev_node,info){
 }
 
 
-############################## obtain the new SNV loci or CNV genome fragments of each subclone ################
+############################## obtain the new variant SNV loci or CNV genome fragments of each subclone compared with its parent subclone ################
 # Input:
 #  clone_gety: the inferred clonal genotype based on the Louvain-Jaccard clustering output by subclone_GTM function;
-#  robust_clone: the clustering result output by LJClustering function;
 #  el: the connected edges in the MST output by plot_MST function.
 #  type: the data type ('SNV' or 'CNV') of input.
 #        Here, 'CNV' data element is the number of copies of each chromosome segment in each cell, such as: 0, 1, 2, 3, 4, 5 , ……, 
@@ -229,42 +229,125 @@ findpath<-function(node,prev_node,info){
 #       'SNV' data element is binary or ternary, that is 0, 1 or 0, 1, 2, 
 #            where 0 represents normal, 1 in binary data represents mutation under the hypothesis of infinite site, and 1,2 in ternary data represent mutation under the hypothesis of finite site;
 # Output: 
-#  clones_mt_change: a list variable where each component contains the new SNV loci or CNV genome fragments of each subclone compared with its parent subclone.
+#  clones_vt: a list variable where each component contains the gene loci with SNV or genome fragments with CNV of each subclone compared with its parent subclone.
 
-new_mutation <- function(clone_gety, robust_clone, el, type){
-  clones_mutation <- list()
-  
+new_variant_site <- function(clone_gety, el, type){
   if(type == 'SNV'){
-    for(i in 1:length(robust_clone)){
-      clone_mt <- which(clone_gety[i,]!=0)
-      clones_mutation <- c(clones_mutation,list(clone_mt))
-    }
+    root_vt <- which(clone_gety[el[1,1],]!= 0)
   }
   if(type == 'CNV'){
-    for(i in 1:length(robust_clone)){
-      clone_mt <- which(clone_gety[i,]!=2)
-      clones_mutation <- c(clones_mutation,list(clone_mt))
-    }
+    root_vt <- which(clone_gety[el[1,1],]!= 2)
   }
-  
-  clones_mt_change <- list() #newly mutated genotypes of each subclone
-  root_mt <- clones_mutation[[el[1,1]]]
-  clones_mt_change <- c(clones_mt_change,list(root_mt))
-  names(clones_mt_change)[1] <- paste('subclone', el[1,1], sep='')
+  clones_vt <- list()
+  clones_vt <- c(clones_vt, list(root_vt))
+  names(clones_vt)[1] <- paste('subclone', el[1,1], sep='')
   for(i in 1:nrow(el)){
     clone1 <- el[i,1]
     clone2 <- el[i,2]
-    clone1_mt <- clones_mutation[[clone1]]
-    clone2_mt <- clones_mutation[[clone2]]
-    new_mt <- setdiff(clone2_mt,clone1_mt)
-    clones_mt_change <- c(clones_mt_change,list(new_mt))
-    names(clones_mt_change)[i+1] <- paste('subclone', as.numeric(clone2), sep='')
+    clone1_clone_gety <- clone_gety[clone1,]
+    clone2_clone_gety <- clone_gety[clone2,]
+    new_vt <- which((clone2_clone_gety - clone1_clone_gety)!=0)
+    clones_vt <- c(clones_vt, list(new_vt))
+    names(clones_vt)[i+1] <- paste('subclone', as.numeric(clone2), sep='')
   }
-  return(clones_mt_change)
+  return(clones_vt)
 }
 
 
+##################### obtain the variant chromosomes of each subclone compared with its parent subclone ##################################
+# Input:
+#  clones_vt: a list variable where each component contains the genome fragments with CNV of each subclone compared with its parent subclone, which is output by new_variant_site function;
+#  chr: the chromosomes in which each genome fragment is located;
+# Output: 
+#  clones_CNV_chr: a list variable where each component contains the variant chromosomes in which all genome fragments with CNV in clones_vt variable are located.
 
+clonal_CNV_chr <- function(clones_vt, chr){
+  clones_CNV_chrs <- list()
+  for(i in 1:length(clones_vt)){
+    clones_CNV_chrs <- c(clones_CNV_chrs, list(chr[clones_vt[[i]]]))
+  }
+  names(clones_CNV_chrs) <- names(clones_vt)
+  
+  clones_CNV_chr <- list()
+  for(i in 1:length(clones_vt)){
+    clones_CNV_chr <- c(clones_CNV_chr, list(unique(clones_CNV_chrs[[i]])))
+  }
+  names(clones_CNV_chr) <- names(clones_vt)
+  return(clones_CNV_chr)
+}
 
+########################## obtain the variant chromosome sates (loss/gain) of each subclone compared with its parent subclone ################
+# Input:
+#  clone_gety: the inferred clonal genotype based on the Louvain-Jaccard clustering output by subclone_GTM function;
+#  el: the connected edges in the MST output by plot_MST function;
+#  chr: a factor variable represents the chromosomes in which each genome fragment is located;
+#  clones_CNV_chr: a list variable where each component contains the variant chromosomes in which all genome fragments with CNV in clones_vt variable are located, which is output by clonal_CNV_chr function;
+# Output: 
+#  clones_vt_state: a list variable where each component is still a list variable, which contains the statistical frequency of how many copy number of each genome segment have changed for each chromosome, when compared with its parent subclone.
+#                    If the number of genome fragments with increased copy number is more than the number of genome fragments with reduced copy number, the  the state of the chromosome is defined as gain, labeled as '+'. Conversely, it is defined as loss, labeled as '-'. 
+#                    the label ('+'/'-') of the chromosome state are reflected on the name of each component.
 
+new_CNV_chr_state <- function(clone_gety, el, chr, clones_CNV_chr){
+  root_st <- matrix(2, 1, dim(clone_gety)[2])
+  root_clone_st <- clone_gety[el[1,1],] - root_st
+  root_clone_chr_st <- list()
+  root_vt_chr <- clones_CNV_chr[[1]]
+  for(i in 1:length(root_vt_chr)){
+    root_clone_chr_st <- c(root_clone_chr_st, list(table(root_clone_st[which(chr==root_vt_chr[i])])))
+  }
+  root_state_label <- c(1:length(root_clone_chr_st))
+  for(i in 1:length(root_clone_chr_st)){
+    chr_table <- root_clone_chr_st[[i]]
+    s <- sum(chr_table[which(as.numeric(names(chr_table))>0)])-sum(chr_table[which(as.numeric(names(chr_table))<0)])
+    if(s > 0){
+      root_state_label[i] = '+'
+    }
+    if(s < 0){
+      root_state_label[i] = '-'
+    }
+    if(s == 0){
+      root_state_label[i] = '='
+    }
+  }
+  names(root_clone_chr_st) <- paste(paste('chr', root_vt_chr, sep=''), root_state_label, sep=',')
+  
+  clones_vt_state <- list()
+  clones_vt_state <- c(clones_vt_state, list(root_clone_chr_st))
+  names(clones_vt_state)[1] <- paste('subclone', el[1,1], sep='')
+  
+  for(i in 1:nrow(el)){
+    clone1 <- el[i,1]
+    clone2 <- el[i,2]
+    clone1_clone_gety <- clone_gety[clone1,]
+    clone2_clone_gety <- clone_gety[clone2,]
+    clone_st <- clone2_clone_gety - clone1_clone_gety
+    
+    clone_chr_st <- list()
+    vt_chr <- clones_CNV_chr[[i+1]]
+    for(j in 1:length(vt_chr)){
+      clone_chr_st <- c(clone_chr_st, list(table(clone_st[which(chr == vt_chr[j])])))
+    }
+    state_label <- c(1:length(clone_chr_st))
+    for(j in 1:length(clone_chr_st)){
+      chr_table <- clone_chr_st[[j]]
+      s <- sum(chr_table[which(as.numeric(names(chr_table))>0)])-sum(chr_table[which(as.numeric(names(chr_table))<0)])
+      # s represents the difference between the number of genome fragments with increased copy number and the number of genome fragments with reduced copy number on this chromosome. 
+      #    If s > 0, the state of this chromosome is defined as gain, that is, '+', if s < 0, it is defined as loss, that is, '-'.
+      if(s > 0){
+        state_label[j] = '+'
+      }
+      if(s < 0){
+        state_label[j] = '-'
+      }
+      if(s == 0){
+        state_label[j] = '='
+      }
+    }
+    names(clone_chr_st) <- paste(paste('chr', vt_chr, sep=''), state_label, sep=',')
+    
+    clones_vt_state <- c(clones_vt_state, list(clone_chr_st))
+    names(clones_vt_state)[i+1] <- paste('subclone', as.numeric(clone2), sep='')
+  }
+  return(clones_vt_state)
+}
 
