@@ -233,7 +233,7 @@ findpath<-function(node,prev_node,info){
 #       'normal' represents that the new variant SNV loci or CNV genome fragments of each subclone are obtained compared with normal cell;
 #       'root' represents that the new variant SNV loci or CNV genome fragments of each subclone are obtained compared with the root/first subclone of evolutionary tree;
 # Output: 
-#  clones_vt: a list variable where each component contains the gene loci with SNV or genome fragments with CNV of each subclone compared with its parent subclone.
+#  clones_vt: a list variable where each component contains the gene loci with SNV or genome fragments with CNV of each subclone compared with its parent subclone or normal cell or the root/first subclone of evolutionary tree.
 
 new_variant_site <- function(clone_gety, el, type, compare.to){
   if(type == 'SNV'){
@@ -267,9 +267,9 @@ new_variant_site <- function(clone_gety, el, type, compare.to){
 }
 
 
-##################### obtain the variant chromosomes of each subclone compared with its parent subclone ##################################
+##################### obtain the variant chromosomes of each subclone compared with its parent subclone or normal cell or the root/first subclone of evolutionary tree ##################################
 # Input:
-#  clones_vt: a list variable where each component contains the genome fragments with CNV of each subclone compared with its parent subclone, which is output by new_variant_site function;
+#  clones_vt: a list variable where each component contains the genome fragments with CNV of each subclone compared with its parent subclone or normal cell or the root/first subclone of evolutionary tree, which is output by new_variant_site function;
 #  chr: the chromosomes in which each genome fragment is located;
 # Output: 
 #  clones_CNV_chr: a list variable where each component contains the variant chromosomes in which all genome fragments with CNV in clones_vt variable are located.
@@ -300,7 +300,7 @@ clonal_CNV_chr <- function(clones_vt, chr){
 #       'normal' represents that the variant chromosome sates (loss/gain) of each subclone are obtained compared with normal cell;
 #       'root' represents that the variant chromosome sates (loss/gain) of each subclone are obtained compared with the root/first subclone of evolutionary tree;
 # Output: 
-#  clones_vt_state: a list variable where each component is still a list variable, which contains the statistical frequency of how many copy number of each genome segment have changed for each chromosome, when compared with its parent subclone.
+#  clones_vt_state: a list variable where each component is still a list variable, which contains the statistical frequency of how many copy number of each genome segment have changed for each chromosome, when compared with its parent subclone or normal cell or the root/first subclone of evolutionary treeor normal cell or the root/first subclone of evolutionary tree.
 #                    If the number of genome fragments with increased copy number is more than the number of genome fragments with reduced copy number, the  the state of the chromosome is defined as gain, labeled as '+'. Conversely, it is defined as loss, labeled as '-'. 
 #                    the label ('+'/'-') of the chromosome state are reflected on the name of each component.
 
