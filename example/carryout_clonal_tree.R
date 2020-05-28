@@ -25,7 +25,7 @@ data_info <- read.csv('SA501X3F.integer_copy_number.csv',header = TRUE) # the ch
 chr <- data_info$chr # the chromosomes in which each genome fragment is located
 
 clones_change_chr <- clonal_CNV_chr(clones_vt, chr) # obtain the variant chromosomes in which all genome fragments with CNV in clones_vt variable are located
-clones_vt_state <- new_CNV_chr_state(clone_gety, MST, chr, clones_change_chr, 'parent') # get the statistical frequency of how many copy number of each genome segment have changed for each chromosome and chromosome states when compared to parent subclone or normal cell 
+clones_vt_state <- new_CNV_chr_state(clone_gety, MST, chr, clones_change_chr, 'parent') # get the statistical frequency of how many copy number of each genome segment have changed for each chromosome and chromosome states when compared to parent subclone or normal cell or the root/first subclone of evolutionary tree 
 
 
 
