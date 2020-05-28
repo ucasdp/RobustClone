@@ -1,4 +1,4 @@
-#rm(list=ls())
+rm(list=ls())
 
 require(igraph)
 require(gmodels)
@@ -219,7 +219,7 @@ findpath<-function(node,prev_node,info){
 }
 
 
-############################## obtain the new variant SNV loci or CNV genome fragments of each subclone compared with its parent subclone ################
+########## obtain the new variant SNV loci or CNV genome fragments of each subclone compared with its parent subclone or normal cell or root/first subclone of evolutionary tree ################
 # Input:
 #  clone_gety: the inferred clonal genotype based on the Louvain-Jaccard clustering output by subclone_GTM function;
 #  el: the connected edges in the MST output by plot_MST function.
@@ -231,6 +231,7 @@ findpath<-function(node,prev_node,info){
 #  compare.to: the comparison objects ('parent' or 'normal') of input.
 #        Here, 'parent'represents that the new variant SNV loci or CNV genome fragments of each subclone are obtained compared with its parent subclone;
 #       'normal' represents that the new variant SNV loci or CNV genome fragments of each subclone are obtained compared with normal cell;
+#       'root' represents that the new variant SNV loci or CNV genome fragments of each subclone are obtained compared with root/first subclone of evolutionary tree;
 # Output: 
 #  clones_vt: a list variable where each component contains the gene loci with SNV or genome fragments with CNV of each subclone compared with its parent subclone.
 
@@ -255,6 +256,9 @@ new_variant_site <- function(clone_gety, el, type, compare.to){
     }
     if(compare.to == 'normal'){
       new_vt <- which(clone2_clone_gety!= normal_state)
+    }
+    if(compare.to == 'root'){
+      new_vt <- which((clone2_clone_gety - clone_gety[el[1,1],])!=0)
     }
     clones_vt <- c(clones_vt, list(new_vt))
     names(clones_vt)[i+1] <- paste('subclone', as.numeric(clone2), sep='')
@@ -285,7 +289,7 @@ clonal_CNV_chr <- function(clones_vt, chr){
   return(clones_CNV_chr)
 }
 
-############### obtain the variant chromosome sates (loss/gain) of each subclone compared with its parent subclone or normal cell ################
+############### obtain the variant chromosome sates (loss/gain) of each subclone compared with its parent subclone or normal cell or root/first subclone of evolutionary tree ################
 # Input:
 #  clone_gety: the inferred clonal genotype based on the Louvain-Jaccard clustering output by subclone_GTM function;
 #  el: the connected edges in the MST output by plot_MST function;
@@ -294,6 +298,7 @@ clonal_CNV_chr <- function(clones_vt, chr){
 #  compare.to: the comparison objects ('parent' or 'normal') of input.
 #        Here, 'parent'represents that the variant chromosome sates (loss/gain) of each subclone are obtained compared with its parent subclone;
 #       'normal' represents that the variant chromosome sates (loss/gain) of each subclone are obtained compared with normal cell;
+#       'root' represents that the variant chromosome sates (loss/gain) of each subclone are obtained compared with root/first subclone of evolutionary tree;
 # Output: 
 #  clones_vt_state: a list variable where each component is still a list variable, which contains the statistical frequency of how many copy number of each genome segment have changed for each chromosome, when compared with its parent subclone.
 #                    If the number of genome fragments with increased copy number is more than the number of genome fragments with reduced copy number, the  the state of the chromosome is defined as gain, labeled as '+'. Conversely, it is defined as loss, labeled as '-'. 
@@ -337,6 +342,9 @@ new_CNV_chr_state <- function(clone_gety, el, chr, clones_CNV_chr, compare.to){
     }
     if(compare.to == 'normal'){
       clone_st <- clone2_clone_gety - root_st
+    }
+    if(compare.to == 'root'){
+      clone_st <- clone2_clone_gety - clone_gety[el[1,1],]
     }
 
     clone_chr_st <- list()
