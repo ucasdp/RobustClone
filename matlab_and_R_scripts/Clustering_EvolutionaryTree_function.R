@@ -1,4 +1,4 @@
-rm(list=ls())
+#rm(list=ls())
 
 require(igraph)
 require(gmodels)
@@ -228,16 +228,20 @@ findpath<-function(node,prev_node,info){
 #            where copy number 2 is normal,
 #       'SNV' data element is binary or ternary, that is 0, 1 or 0, 1, 2, 
 #            where 0 represents normal, 1 in binary data represents mutation under the hypothesis of infinite site, and 1,2 in ternary data represent mutation under the hypothesis of finite site;
+#  compare.to: the comparison objects ('parent' or 'normal') of input.
+#        Here, 'parent'represents that the new variant SNV loci or CNV genome fragments of each subclone are obtained compared with its parent subclone;
+#       'normal' represents that the new variant SNV loci or CNV genome fragments of each subclone are obtained compared with normal cell;
 # Output: 
 #  clones_vt: a list variable where each component contains the gene loci with SNV or genome fragments with CNV of each subclone compared with its parent subclone.
 
-new_variant_site <- function(clone_gety, el, type){
+new_variant_site <- function(clone_gety, el, type, compare.to){
   if(type == 'SNV'){
-    root_vt <- which(clone_gety[el[1,1],]!= 0)
+    normal_state <- 0
   }
   if(type == 'CNV'){
-    root_vt <- which(clone_gety[el[1,1],]!= 2)
+    normal_state <- 2
   }
+  root_vt <- which(clone_gety[el[1,1],]!= normal_state)
   clones_vt <- list()
   clones_vt <- c(clones_vt, list(root_vt))
   names(clones_vt)[1] <- paste('subclone', el[1,1], sep='')
@@ -246,7 +250,12 @@ new_variant_site <- function(clone_gety, el, type){
     clone2 <- el[i,2]
     clone1_clone_gety <- clone_gety[clone1,]
     clone2_clone_gety <- clone_gety[clone2,]
-    new_vt <- which((clone2_clone_gety - clone1_clone_gety)!=0)
+    if(compare.to == 'parent'){
+      new_vt <- which((clone2_clone_gety - clone1_clone_gety)!=0)
+    }
+    if(compare.to == 'normal'){
+      new_vt <- which(clone2_clone_gety!= normal_state)
+    }
     clones_vt <- c(clones_vt, list(new_vt))
     names(clones_vt)[i+1] <- paste('subclone', as.numeric(clone2), sep='')
   }
@@ -276,18 +285,21 @@ clonal_CNV_chr <- function(clones_vt, chr){
   return(clones_CNV_chr)
 }
 
-########################## obtain the variant chromosome sates (loss/gain) of each subclone compared with its parent subclone ################
+############### obtain the variant chromosome sates (loss/gain) of each subclone compared with its parent subclone or normal cell ################
 # Input:
 #  clone_gety: the inferred clonal genotype based on the Louvain-Jaccard clustering output by subclone_GTM function;
 #  el: the connected edges in the MST output by plot_MST function;
 #  chr: a factor variable represents the chromosomes in which each genome fragment is located;
 #  clones_CNV_chr: a list variable where each component contains the variant chromosomes in which all genome fragments with CNV in clones_vt variable are located, which is output by clonal_CNV_chr function;
+#  compare.to: the comparison objects ('parent' or 'normal') of input.
+#        Here, 'parent'represents that the variant chromosome sates (loss/gain) of each subclone are obtained compared with its parent subclone;
+#       'normal' represents that the variant chromosome sates (loss/gain) of each subclone are obtained compared with normal cell;
 # Output: 
 #  clones_vt_state: a list variable where each component is still a list variable, which contains the statistical frequency of how many copy number of each genome segment have changed for each chromosome, when compared with its parent subclone.
 #                    If the number of genome fragments with increased copy number is more than the number of genome fragments with reduced copy number, the  the state of the chromosome is defined as gain, labeled as '+'. Conversely, it is defined as loss, labeled as '-'. 
 #                    the label ('+'/'-') of the chromosome state are reflected on the name of each component.
 
-new_CNV_chr_state <- function(clone_gety, el, chr, clones_CNV_chr){
+new_CNV_chr_state <- function(clone_gety, el, chr, clones_CNV_chr, compare.to){
   root_st <- matrix(2, 1, dim(clone_gety)[2])
   root_clone_st <- clone_gety[el[1,1],] - root_st
   root_clone_chr_st <- list()
@@ -320,8 +332,13 @@ new_CNV_chr_state <- function(clone_gety, el, chr, clones_CNV_chr){
     clone2 <- el[i,2]
     clone1_clone_gety <- clone_gety[clone1,]
     clone2_clone_gety <- clone_gety[clone2,]
-    clone_st <- clone2_clone_gety - clone1_clone_gety
-    
+    if(compare.to == 'parent'){
+      clone_st <- clone2_clone_gety - clone1_clone_gety
+    }
+    if(compare.to == 'normal'){
+      clone_st <- clone2_clone_gety - root_st
+    }
+
     clone_chr_st <- list()
     vt_chr <- clones_CNV_chr[[i+1]]
     for(j in 1:length(vt_chr)){
@@ -350,4 +367,6 @@ new_CNV_chr_state <- function(clone_gety, el, chr, clones_CNV_chr){
   }
   return(clones_vt_state)
 }
+
+
 
