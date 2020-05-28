@@ -305,8 +305,8 @@ clonal_CNV_chr <- function(clones_vt, chr){
 #                    the label ('+'/'-') of the chromosome state are reflected on the name of each component.
 
 new_CNV_chr_state <- function(clone_gety, el, chr, clones_CNV_chr, compare.to){
-  root_st <- matrix(2, 1, dim(clone_gety)[2])
-  root_clone_st <- clone_gety[el[1,1],] - root_st
+  normal_st <- matrix(2, 1, dim(clone_gety)[2])
+  root_clone_st <- clone_gety[el[1,1],] - normal_st
   root_clone_chr_st <- list()
   root_vt_chr <- clones_CNV_chr[[1]]
   for(i in 1:length(root_vt_chr)){
@@ -341,7 +341,7 @@ new_CNV_chr_state <- function(clone_gety, el, chr, clones_CNV_chr, compare.to){
       clone_st <- clone2_clone_gety - clone1_clone_gety
     }
     if(compare.to == 'normal'){
-      clone_st <- clone2_clone_gety - root_st
+      clone_st <- clone2_clone_gety - normal_st
     }
     if(compare.to == 'root'){
       clone_st <- clone2_clone_gety - clone_gety[el[1,1],]
